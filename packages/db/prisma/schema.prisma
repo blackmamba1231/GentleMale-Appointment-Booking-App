@@ -1,0 +1,160 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  STYLIST
+  ADMIN
+}
+
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique @db.VarChar(254) // lowercased; enforce app-side
+  phoneE164       String?  @db.VarChar(20)          // +11234567890
+  name            String?  @db.VarChar(120)
+  avatarUrl       String?  @db.Text
+  // Verification & state
+  emailVerifiedAt DateTime?
+  phoneVerifiedAt DateTime?
+  disabled        Boolean  @default(false)
+  // Auditing
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  lastLoginAt     DateTime?
+
+  // Relations
+  credentials     UserCredential?
+  roles           UserRole[]
+  sessions        Session[]
+  accounts        Account[]        
+  totp            TotpSecret?
+  loginEvents     LoginEvent[]
+
+  @@index([phoneE164])
+}
+
+/**
+ * Store password hash separate from the main user row.
+ * Using Argon2id (recommended) or scrypt. DO NOT storing raw passwords.
+ */
+model UserCredential {
+  userId        String  @id
+  passwordHash  String  @db.VarChar(255) // e.g., argon2id encoded string
+  passwordAlgo  String  @default("argon2id") @db.VarChar(32)
+  passwordSetAt DateTime @default(now())
+  // lockout / brute-force controls
+  failedAttempts Int     @default(0)
+  lockedUntil    DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/**
+ * Role-based access control. Flexible for staff vs customers.
+ */
+model UserRole {
+  id     String @id @default(cuid())
+  userId String
+  role   Role
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, role]) // a user can’t have the same role twice
+  @@index([role])
+}
+
+/**
+ * Session token for cookie-based auth (server sessions) or API sessions.
+ * If you use JWT-only, you might skip this and store refresh tokens instead.
+ */
+model Session {
+  id                 String   @id @default(cuid())
+  userId             String
+  // Two-token pattern: short-lived access (in memory/JWT) + long-lived refresh (db)
+  refreshTokenHash   String?  @db.VarChar(255)
+  ip                 String?  @db.VarChar(64)
+  createdAt          DateTime @default(now())
+  expiresAt          DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+/**
+ * Email verification links, password reset, invite flows, magic links.
+ * Keep them short-lived and hashed if you want extra safety.
+ */
+model VerificationToken {
+  id         String   @id @default(cuid())
+  identifier String   @db.VarChar(254) // usually user email or userId
+  token      String   @unique          // store a hash if you prefer
+  type       String   @db.VarChar(32)  // "email_verify" | "password_reset" | "magic"
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+
+  @@index([identifier, type])
+  @@index([expiresAt])
+}
+
+
+model TotpSecret {
+  userId     String  @id
+  secretEnc  String  @db.Text // encrypted TOTP secret
+  createdAt  DateTime @default(now())
+  verifiedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
+
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  provider          String  @db.VarChar(40)   // "google" | "apple" | …
+  providerAccountId String  @db.VarChar(128)  // subject / sub
+  accessToken       String? @db.Text
+  refreshToken      String? @db.Text
+  expiresAt         DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+/**
+ * Simple audit for sign-ins, failures, lockouts. Great for security reviews.
+ */
+model LoginEvent {
+  id         String   @id @default(cuid())
+  userId     String?
+  emailTried String?  @db.VarChar(254)
+  success    Boolean
+  reason     String?  @db.VarChar(64) // "OK" | "BAD_PASSWORD" | "LOCKED" | "2FA_REQUIRED" | …
+  ip         String?  @db.VarChar(64)
+  userAgent  String?  @db.VarChar(512)
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([userId])
+}
+
