@@ -1,16 +1,22 @@
-import type { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import { env } from "../utils/env";
+// apps/api/src/middlewares/auth.ts
+import type { Request, Response, NextFunction } from 'express';
+import { verifyAccessToken } from '../lib/tokens';
+import type { AuthUser } from '../types/express';
 
-export function requireAuth(req: Request, _res: Response, next: NextFunction) {
-  const header = req.headers.authorization?.split(" ");
-  const token = header?.[0] === "Bearer" ? header[1] : undefined;
-  if (!token) return next(new Error("UNAUTHORIZED"));
+export async function requireAuth(req: Request, res: Response, next: NextFunction) {
+  const h = req.get('authorization');
+  if (!h?.startsWith('Bearer ')) return res.status(401).json({ error: 'Missing token' });
+
   try {
-    const payload = jwt.verify(token, env.JWT_SECRET) as { sub: string, [k: string]: any };
-    (req as any).user = { id: payload.sub, sessionId: (payload as any).sid };
+    const { payload } = await verifyAccessToken(h.slice(7));
+    const user: AuthUser = {
+      id: String(payload.sub),
+      role: String(payload.role) as AuthUser['role'],
+      sessionId: String(payload.jti ?? ''), // or attach your own session id
+    };
+    req.user = user;
     next();
   } catch {
-    next(new Error("UNAUTHORIZED"));
+    res.status(401).json({ error: 'Invalid token' });
   }
 }

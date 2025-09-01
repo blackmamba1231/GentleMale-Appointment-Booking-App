@@ -42,7 +42,6 @@ export async function login(
       userId: user.id,
       refreshTokenHash: refreshHash,
       ip: req.ip ?? null,
-      userAgent: req.headers["user-agent"] ?? null,
       expiresAt
     }
   });
@@ -54,7 +53,6 @@ export async function refresh(input: { refreshToken: string; sessionId: string }
   const session = await db.session.findUnique({ where: { id: input.sessionId }, include: { user: true } });
   if (!session || !session.refreshTokenHash) throw new Error("INVALID_SESSION");
 
-  // Re-hash and compare (argon2.verify) – omitted here for brevity; call your helper.
   const valid = await import("../utils/crypto").then(m => m.verifyRefresh(session.refreshTokenHash!, input.refreshToken));
   if (!valid || new Date() > session.expiresAt) throw new Error("REFRESH_EXPIRED");
 

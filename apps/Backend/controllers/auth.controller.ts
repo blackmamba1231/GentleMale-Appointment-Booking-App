@@ -24,11 +24,14 @@ export async function refresh(req: Request, res: Response, next: NextFunction) {
 
 export async function logout(req: Request, res: Response, next: NextFunction) {
   try {
-    await service.logout(req.user!.sessionId);
+    if (!req.user) return res.status(401).json({ error: 'Unauthenticated' });
+    await service.logout(req.user.sessionId);
     res.status(204).end();
   } catch (e) { next(e); }
 }
 
 export async function me(req: Request, res: Response) {
+  if (!req.user) return res.status(401).json({ error: 'Unauthenticated' });
   res.json(req.user);
 }
+
