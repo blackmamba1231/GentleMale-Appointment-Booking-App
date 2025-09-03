@@ -5,7 +5,7 @@ import { sendEmail, generateOTP } from "../utils/utils";
 
 
 export async function register(input: { email: string; password: string; name?: string; phone?: string }) {
-  const exists = await db.user.findUnique({ where: { email: input.email.toLowerCase() } });
+  try{const exists = await db.user.findUnique({ where: { email: input.email.toLowerCase() } });
   if (exists) throw new Error("EMAIL_EXISTS");
 
   const passwordHash = await hashPassword(input.password);
@@ -22,13 +22,30 @@ export async function register(input: { email: string; password: string; name?: 
       emailVerified: false,
       createdAt: new Date(),
       updatedAt: new Date(),
-      OTP: otp
+      OTP: otp,
+      OTP_expiresAt: new Date(Date.now() + 5 * 60 * 1000) 
     },
     include: { roles: true }
   });
-  await sendEmail("Welcome to Gentlemale App! Your One Time Password is" + otp, user.email, "Welcome to Gentlemale App, Here is your One Time Password");
-  
+  await sendEmail("Welcome to Gentlemale App! Your One Time Password is" + otp + ". This OTP is valid for 5 minutes.", user.email, "Welcome to Gentlemale App, Here is your One Time Password");
   return { user: { id: user.id, email: user.email, roles: user.roles.map(r => r.role) } };
+  }catch(err){
+    throw err;
+  }
+}
+
+export async function verify(input: { email: string; otp: string }) {
+  const user = await db.user.findUnique({ where: { email: input.email.toLowerCase() } });
+  if (!user) throw new Error("USER_NOT_FOUND");
+  if(user.OTP_expiresAt && new Date() > user.OTP_expiresAt) throw new Error("OTP IS EXPIRED");
+  if (user.OTP !== input.otp) throw new Error("INVALID_OTP");
+  
+  await db.user.update({
+    where: { id: user.id },
+    data: { emailVerified: true, OTP: null }
+  });
+
+  return { message: "Email verified successfully" };
 }
 
 export async function login(
@@ -40,7 +57,7 @@ export async function login(
     include: { credentials: true }
   });
   if (!user || !user.credentials) throw new Error("BAD_CREDENTIALS");
-
+  if (!user.emailVerified) throw new Error("EMAIL_NOT_VERIFIED");
   const ok = await verifyPassword(user.credentials.passwordHash, input.password);
   if (!ok) throw new Error("BAD_CREDENTIALS");
 
@@ -52,6 +69,7 @@ export async function login(
       userId: user.id,
       refreshTokenHash: refreshHash,
       ip: req.ip ?? null,
+      createdAt: new Date(),
       expiresAt
     }
   });

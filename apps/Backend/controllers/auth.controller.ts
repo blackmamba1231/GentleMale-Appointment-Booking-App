@@ -8,6 +8,13 @@ export async function register(req: Request, res: Response, next: NextFunction) 
   } catch (e) { next(e); }
 }
 
+export async function verify(req: Request, res: Response, next: NextFunction) {
+  try {
+    const result = await service.verify(req.body);
+    res.status(200).json(result);
+  } catch (e) { next(e); }
+}
+
 export async function login(req: Request, res: Response, next: NextFunction) {
   try {
     const result = await service.login(req.body, req);

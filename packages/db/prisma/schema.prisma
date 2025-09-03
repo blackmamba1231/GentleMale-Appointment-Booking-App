@@ -27,7 +27,7 @@ model User {
   name            String?  @db.VarChar(120)
   avatarUrl       String?  @db.Text 
   OTP           String?  @db.VarChar(6)            // exprires in 5 mins
-
+  OTP_expiresAt DateTime?
   // Verification & state
   emailVerified   Boolean  @default(false)
   phoneVerified   Boolean  @default(false)

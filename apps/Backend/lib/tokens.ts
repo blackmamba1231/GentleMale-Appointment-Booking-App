@@ -4,12 +4,7 @@ import { env } from './env';
 
 const alg = env.jwtPublicKey ? 'EdDSA' : 'HS512';
 
-/**
- * Create a signed access token (JWT).
- * @param sub user id
- * @param role role of the user (user/admin/stylist etc.)
- * @param sessionId optional session identifier (for logout/rotation)
- */
+
 export async function signAccessToken(
   sub: string,
   role: string,
@@ -38,10 +33,7 @@ export async function signAccessToken(
     .sign(key);
 }
 
-/**
- * Verify and decode an access token.
- * Throws if invalid or expired.
- */
+
 export async function verifyAccessToken(token: string) {
   const key = env.jwtPublicKey
     ? await jose.importSPKI(env.jwtPublicKey, alg)

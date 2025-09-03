@@ -9,6 +9,13 @@ export const registerSchema = z.object({
   })
 });
 
+export const verifySchema = z.object({
+  body: z.object({
+    email: z.string().email(),
+    otp: z.string().min(1).max(10),
+  })
+});
+
 export const loginSchema = z.object({
   body: z.object({
     email: z.string().email(),
