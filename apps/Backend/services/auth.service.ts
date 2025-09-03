@@ -1,23 +1,33 @@
 import { db } from "db/client"; 
 import { hashPassword, verifyPassword, newRefreshToken, signAccessJwt } from "../utils/crypto";
 import { env } from "../utils/env";
+import { sendEmail, generateOTP } from "../utils/utils";
 
-export async function register(input: { email: string; password: string; name?: string }) {
+
+export async function register(input: { email: string; password: string; name?: string; phone?: string }) {
   const exists = await db.user.findUnique({ where: { email: input.email.toLowerCase() } });
   if (exists) throw new Error("EMAIL_EXISTS");
 
   const passwordHash = await hashPassword(input.password);
+  const otp = generateOTP();
 
   const user = await db.user.create({
     data: {
       email: input.email.toLowerCase(),
       name: input.name ?? null,
       credentials: { create: { passwordHash } },
-      roles: { create: { role: "CUSTOMER" } }
+      roles: { create: { role: "CUSTOMER" } },
+      phoneE164: input.phone ?? null,
+      phoneVerified: false,
+      emailVerified: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      OTP: otp
     },
     include: { roles: true }
   });
-
+  await sendEmail("Welcome to Gentlemale App! Your One Time Password is" + otp, user.email, "Welcome to Gentlemale App, Here is your One Time Password");
+  
   return { user: { id: user.id, email: user.email, roles: user.roles.map(r => r.role) } };
 }
 

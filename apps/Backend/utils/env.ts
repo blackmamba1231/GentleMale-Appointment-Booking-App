@@ -3,9 +3,12 @@ import { z } from "zod";
 const EnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().default(3000),
-  JWT_SECRET: z.string().min(32),
-  JWT_EXPIRES_IN: z.string().default("15m"),
-  REFRESH_EXPIRES_IN: z.string().default("30d")
+  JWT_SECRET: z.string(),
+  JWT_EXPIRES_IN: z.number(),
+  REFRESH_EXPIRES_IN: z.number(),
+  EMAIL: z.string().email().optional(),
+  EMAIL_PASSWORD: z.string().optional(),
+  OTP_SECRET: z.string().optional()
 });
 
 export const env = EnvSchema.parse(process.env);

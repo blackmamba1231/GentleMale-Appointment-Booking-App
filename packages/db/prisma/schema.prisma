@@ -25,10 +25,12 @@ model User {
   email           String   @unique @db.VarChar(254) // lowercased; enforce app-side
   phoneE164       String?  @db.VarChar(20)          // +11234567890
   name            String?  @db.VarChar(120)
-  avatarUrl       String?  @db.Text
+  avatarUrl       String?  @db.Text 
+  OTP           String?  @db.VarChar(6)            // exprires in 5 mins
+
   // Verification & state
-  emailVerifiedAt DateTime?
-  phoneVerifiedAt DateTime?
+  emailVerified   Boolean  @default(false)
+  phoneVerified   Boolean  @default(false)
   disabled        Boolean  @default(false)
   // Auditing
   createdAt       DateTime @default(now())
@@ -39,8 +41,7 @@ model User {
   credentials     UserCredential?
   roles           UserRole[]
   sessions        Session[]
-  accounts        Account[]        
-  totp            TotpSecret?
+  accounts        Account[]  
   loginEvents     LoginEvent[]
 
   @@index([phoneE164])
@@ -112,14 +113,7 @@ model VerificationToken {
 }
 
 
-model TotpSecret {
-  userId     String  @id
-  secretEnc  String  @db.Text // encrypted TOTP secret
-  createdAt  DateTime @default(now())
-  verifiedAt DateTime?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
 
 
 
