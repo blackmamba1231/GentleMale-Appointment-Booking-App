@@ -11,6 +11,9 @@ const EnvSchema = z.object({
   OTP_SECRET: z.string().optional(),
   jwtIssuer: z.string().default("gentlemale"),
   jwtAudience: z.string().default("gentlemale"),
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
+  GOOGLE_REDIRECT_URI: z.string().optional(),
 });
 
 export const env = EnvSchema.parse(process.env);

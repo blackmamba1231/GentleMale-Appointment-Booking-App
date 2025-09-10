@@ -41,3 +41,17 @@ export async function me(req: Request, res: Response) {
   res.json(req.user);
 }
 
+export async function googleOAuth(req: Request, res: Response) {
+  const googleAuthUrl = service.googleOAuthService.getGoogleOAuthUrl();
+  res.redirect(googleAuthUrl);
+}
+
+export async function googleOAuthCallback(req: Request, res: Response,next: NextFunction) {
+   try {
+    const { code } = req.query as { code: string };
+    const tokens = await service.googleOAuthService.handleGoogleCallback(code);
+    res.json(tokens);
+  } catch (e) {
+    next(e);
+  }
+}

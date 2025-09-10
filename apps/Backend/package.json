@@ -14,6 +14,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
     "argon2": "^0.44.0",
+    "axios": "^1.11.0",
     "cors": "^2.8.5",
     "db": "*",
     "express": "^5.1.0",

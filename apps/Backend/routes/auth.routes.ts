@@ -12,5 +12,7 @@ r.post("/verify", validate(verifySchema), ctrl.verify);
 r.post("/refresh", validate(refreshSchema), ctrl.refresh);
 r.post("/logout",optionalAuth , ctrl.logout);
 r.get("/me", requireAuth, ctrl.me);
+r.get("/google", ctrl.googleOAuth);
+r.get("/google/callback", ctrl.googleOAuthCallback);
 
 export default r;
