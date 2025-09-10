@@ -31,8 +31,7 @@ export async function refresh(req: Request, res: Response, next: NextFunction) {
 
 export async function logout(req: Request, res: Response, next: NextFunction) {
   try {
-    if (!req.user) return res.status(401).json({ error: 'Unauthenticated' });
-    await service.logout(req.user.sessionId);
+    await service.logout(req.body.sessionId);
     res.status(204).end();
   } catch (e) { next(e); }
 }

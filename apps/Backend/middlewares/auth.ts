@@ -37,7 +37,7 @@ export async function optionalAuth(req: Request, res: Response, next: NextFuncti
   if (!h?.startsWith('Bearer ')) return res.status(401).json({ error: 'Missing token' });
   try {
     const sessionexists = await db.session.findUnique({
-      where: { id: req.user?.sessionId }  
+      where: { id: req.body.sessionId }  
     });
     if(!sessionexists) return res.status(401).json({ error: 'Session not found' });
     if (new Date() > sessionexists.expiresAt) {
