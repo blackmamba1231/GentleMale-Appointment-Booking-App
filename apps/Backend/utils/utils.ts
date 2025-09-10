@@ -4,7 +4,7 @@ const speakeasy = require("speakeasy");
 
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.ethereal.email",
+  host: "smtp.gmail.com",
   port: 587,
   secure: false, 
   auth: {

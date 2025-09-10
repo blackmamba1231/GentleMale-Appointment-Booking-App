@@ -35,7 +35,7 @@ export async function signAccessToken(
 
 
 export async function verifyAccessToken(token: string) {
-  const key = env.jwtPublicKey
+  try{const key = env.jwtPublicKey
     ? await jose.importSPKI(env.jwtPublicKey, alg)
     : new TextEncoder().encode(env.jwtPrivateKey);
 
@@ -43,4 +43,7 @@ export async function verifyAccessToken(token: string) {
     issuer: env.jwtIssuer,
     audience: env.jwtAudience,
   });
+  }catch(err){
+    throw err;
+  }
 }
