@@ -126,7 +126,7 @@ export async function refresh(input: { refreshToken: string; sessionId: string }
   const valid = await import("../utils/crypto").then(m => m.verifyRefresh(session.refreshTokenHash!, input.refreshToken));
   if (!valid || new Date() > session.expiresAt) throw new Error("REFRESH_EXPIRED");
 
-  const accessToken = await signAccessJwt({ sub: session.userId }, env.JWT_EXPIRES_IN);
+  const accessToken = await signAccessJwt({ sub: session.userId ,role: "CUSTOMER", jti: input.sessionId }, env.JWT_EXPIRES_IN);
   return { accessToken };
 }
 

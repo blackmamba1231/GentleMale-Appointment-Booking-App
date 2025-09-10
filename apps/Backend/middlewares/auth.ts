@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { verifyAccessToken } from '../lib/tokens';
+import { verifyAccessToken } from '../utils/crypto';
 import type { AuthUser } from '../types/express';
 import { db } from 'db/client'
 export async function requireAuth(req: Request, res: Response, next: NextFunction) {
@@ -7,7 +7,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   if (!h?.startsWith('Bearer ')) return res.status(401).json({ error: 'Missing token' });
 
   try {
-    const { payload } = await verifyAccessToken(h.slice(7));
+    const payload = await verifyAccessToken(h.slice(7));
     if (!payload) return res.status(401).json({ error: "Invalid or expired access token" });
     const session = await db.session.findUnique({
       where: { id: payload.jti }  
@@ -29,6 +29,22 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     req.user = user;
     next();
   } catch(err) {
+    res.status(401).json({ error: 'Invalid token' + err });
+  }
+}
+export async function optionalAuth(req: Request, res: Response, next: NextFunction) {
+  const h = req.get('authorization');
+  if (!h?.startsWith('Bearer ')) return res.status(401).json({ error: 'Missing token' });
+  try {
+    const sessionexists = await db.session.findUnique({
+      where: { id: req.user?.sessionId }  
+    });
+    if(!sessionexists) return res.status(401).json({ error: 'Session not found' });
+    if (new Date() > sessionexists.expiresAt) {
+      return res.status(401).json({ error: 'Session expired, login again' });
+    }
+    next();
+  }catch(err) {
     res.status(401).json({ error: 'Invalid token' + err });
   }
 }

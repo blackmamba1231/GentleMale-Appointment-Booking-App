@@ -8,7 +8,9 @@ const EnvSchema = z.object({
   REFRESH_EXPIRES_IN: z.coerce.number(),
   EMAIL: z.string().email().optional(),
   EMAIL_PASSWORD: z.string().optional(),
-  OTP_SECRET: z.string().optional()
+  OTP_SECRET: z.string().optional(),
+  jwtIssuer: z.string().default("gentlemale"),
+  jwtAudience: z.string().default("gentlemale"),
 });
 
 export const env = EnvSchema.parse(process.env);
