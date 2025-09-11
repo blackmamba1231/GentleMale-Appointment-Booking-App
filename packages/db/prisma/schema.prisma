@@ -19,7 +19,14 @@ enum Role {
   STYLIST
   ADMIN
 }
-
+enum Services {
+  HAIRCUT
+  COLORING
+  STYLING
+  TREATMENT
+  EXTENSIONS
+  OTHER
+}
 model User {
   id              String   @id @default(cuid())
   email           String   @unique @db.VarChar(254) // lowercased; enforce app-side
@@ -43,20 +50,24 @@ model User {
   sessions        Session[]
   accounts        Account[]  
   loginEvents     LoginEvent[]
-
+  appointments    appointment[]
   @@index([phoneE164])
 }
 
-/**
- * Store password hash separate from the main user row.
- * Using Argon2id (recommended) or scrypt. DO NOT storing raw passwords.
- */
+model appointment {
+  customerId String @id
+  date DateTime 
+  customerEmail String 
+  customerPhone String?
+  confirmed Boolean @default(false)
+  service String @db.VarChar(100)
+  customer User @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
 model UserCredential {
   userId        String  @id
   passwordHash  String  @db.VarChar(255) // e.g., argon2id encoded string
   passwordAlgo  String  @default("argon2id") @db.VarChar(32)
   passwordSetAt DateTime @default(now())
-  // lockout / brute-force controls
   failedAttempts Int     @default(0)
   lockedUntil    DateTime?
 
@@ -96,15 +107,11 @@ model Session {
   @@index([expiresAt])
 }
 
-/**
- * Email verification links, password reset, invite flows, magic links.
- * Keep them short-lived and hashed if you want extra safety.
- */
 model VerificationToken {
   id         String   @id @default(cuid())
-  identifier String   @db.VarChar(254) // usually user email or userId
-  token      String   @unique          // store a hash if you prefer
-  type       String   @db.VarChar(32)  // "email_verify" | "password_reset" | "magic"
+  identifier String   @db.VarChar(254) 
+  token      String   @unique          
+  type       String   @db.VarChar(32)  
   expiresAt  DateTime
   createdAt  DateTime @default(now())
 
@@ -113,16 +120,11 @@ model VerificationToken {
 }
 
 
-
-
-
-
-
 model Account {
   id                String  @id @default(cuid())
   userId            String
-  provider          String  @db.VarChar(40)   // "google" | "apple" | …
-  providerAccountId String  @db.VarChar(128)  // subject / sub
+  provider          String  @db.VarChar(40)   
+  providerAccountId String  @db.VarChar(128) 
   accessToken       String? @db.Text
   refreshToken      String? @db.Text
   expiresAt         DateTime?
@@ -133,15 +135,13 @@ model Account {
   @@index([userId])
 }
 
-/**
- * Simple audit for sign-ins, failures, lockouts. Great for security reviews.
- */
+
 model LoginEvent {
   id         String   @id @default(cuid())
   userId     String?
   emailTried String?  @db.VarChar(254)
   success    Boolean
-  reason     String?  @db.VarChar(64) // "OK" | "BAD_PASSWORD" | "LOCKED" | "2FA_REQUIRED" | …
+  reason     String?  @db.VarChar(64) 
   ip         String?  @db.VarChar(64)
   userAgent  String?  @db.VarChar(512)
   createdAt  DateTime @default(now())
