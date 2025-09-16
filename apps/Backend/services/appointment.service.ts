@@ -33,13 +33,13 @@ export async function getMyAppointments(req: { user?: { id: string, role: 'CUSTO
         throw e;
     }
 }
-export async function cancelAppointment(req: { user?: { id: string, role: 'CUSTOMER' | 'STYLIST' | 'ADMIN', sessionId: string }}){
+export async function cancelAppointment(params:{ id: string },req: { user?: { id: string, role: 'CUSTOMER' | 'STYLIST' | 'ADMIN', sessionId: string }}){
     try{
         if(!req.user) throw new Error("UNAUTHENTICATED");
         if(req.user.role !== "CUSTOMER") throw new Error("FORBIDDEN");
-        const appointment = await db.appointment.findUnique({ where: { customerId: req.user.id } });
+        const appointment = await db.appointment.findUnique({ where: { customerId: req.user.id, id: params.id } });
         if(!appointment) throw new Error("APPOINTMENT_NOT_FOUND");
-        await db.appointment.delete({ where: { customerId: req.user.id } });
+        await db.appointment.delete({ where: { customerId: req.user.id, id: params.id } });
         return appointment;
     } catch (e){
         throw e;

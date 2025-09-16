@@ -55,7 +55,8 @@ model User {
 }
 
 model appointment {
-  customerId String @id
+  id String @id @default(cuid())
+  customerId String 
   date DateTime 
   customerEmail String 
   customerPhone String?
