@@ -16,11 +16,19 @@ export async function getMyAppointments(req: Request, res: Response, next: NextF
 }
 
 export async function getAllAppointments(req: Request, res: Response, next: NextFunction) {
-
+  try{
+    const result = await service.getAllAppointments(req);
+    res.status(200).json(result);
+  }catch (e) { next(e); }
 }
 
 export async function confirmAppointment(req: Request, res: Response, next: NextFunction) {
-
+  try{
+    const { id } = req.params;
+    if (typeof id !== 'string') throw new Error('Invalid appointment id');
+    const result = await service.confirmAppointment({ id }, req);
+    res.status(200).json(result);
+  }catch (e) { next(e); }
 }
 
 export async function cancelAppointment(req: Request, res: Response, next: NextFunction) {

@@ -62,6 +62,7 @@ model appointment {
   customerPhone String?
   confirmed Boolean @default(false)
   service String @db.VarChar(100)
+  expired Boolean @default(false)
   customer User @relation(fields: [customerId], references: [id], onDelete: Cascade)
 }
 model UserCredential {
