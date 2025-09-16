@@ -10,7 +10,8 @@ export async function bookAppointment(req: Request, res: Response, next: NextFun
 
 export async function getMyAppointments(req: Request, res: Response, next: NextFunction) {
     try{
-        
+        const result = await service.getMyAppointments(req);
+        res.status(200).json(result);
     }catch (e) { next(e); }
 }
 

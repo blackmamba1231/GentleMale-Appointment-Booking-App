@@ -22,3 +22,26 @@ export async function bookAppointment(input:{ service: string, date: Date }, req
         throw e;
     }
 }
+export async function getMyAppointments(req: { user?: { id: string, role: 'CUSTOMER' | 'STYLIST' | 'ADMIN', sessionId: string }}){
+    try{
+        if(!req.user) throw new Error("UNAUTHENTICATED");
+        if(req.user.role !== "CUSTOMER") throw new Error("FORBIDDEN");
+        const appointments = await db.appointment.findMany({ where: { customerId: req.user.id } });
+        if(!appointments) throw new Error("APPOINTMENTS_NOT_FOUND");
+        return appointments;
+    } catch (e){
+        throw e;
+    }
+}
+export async function cancelAppointment(req: { user?: { id: string, role: 'CUSTOMER' | 'STYLIST' | 'ADMIN', sessionId: string }}){
+    try{
+        if(!req.user) throw new Error("UNAUTHENTICATED");
+        if(req.user.role !== "CUSTOMER") throw new Error("FORBIDDEN");
+        const appointment = await db.appointment.findUnique({ where: { customerId: req.user.id } });
+        if(!appointment) throw new Error("APPOINTMENT_NOT_FOUND");
+        await db.appointment.delete({ where: { customerId: req.user.id } });
+        return appointment;
+    } catch (e){
+        throw e;
+    }
+}
