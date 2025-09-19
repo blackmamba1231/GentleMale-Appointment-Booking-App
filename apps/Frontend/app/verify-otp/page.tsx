@@ -51,6 +51,7 @@ export default function VerifyOtpPage() {
       })
       router.push("/login")
     } catch (error) {
+      console.log("error occured", error)
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "OTP verification failed",

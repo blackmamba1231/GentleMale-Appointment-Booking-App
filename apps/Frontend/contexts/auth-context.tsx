@@ -80,61 +80,74 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
 
   const verifyOtp = async (email: string, otp: string) => {
-    const response = await fetch("/api/v1/auth/verify", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, otp }),
-    })
-
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.message || "OTP verification failed")
+    try{
+      const response = await fetch("/api/v1/auth/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, otp }),
+      })
+  
+      if (!response.ok) {
+        const error = await response.json()
+        console.log("verification Catch triggered", error);
+        throw new Error(error || "OTP verification failed")
+      }
+  
+      return response.json()
+    }catch(error: any){
+      console.log("error catched", error.message);
+      throw new Error(error.message);
     }
-
-    return response.json()
   }
 
   const login = async (email: string, password: string) => {
-    const response = await fetch("/api/v1/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    })
-
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.message || "Login failed")
-    }
-
-    const data = await response.json()
-    setAccessToken(data.accessToken)
-
-    // Store refresh token and session ID in HTTP-only cookie via API route
-    await fetch("/api/auth/set-tokens", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        refreshToken: data.refreshToken,
-        sessionId: data.sessionId,
-      }),
-    })
-
-    // Get user info
-    const userResponse = await fetch("/api/v1/auth/me", {
-      headers: {
-        Authorization: `Bearer ${data.accessToken}`,
-      },
-    })
-
-    if (userResponse.ok) {
-      const userData = await userResponse.json()
-      setUser(userData)
+    try{
+      const response = await fetch("/api/v1/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      })
+  
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error || "Login failed")
+      }
+  
+      const data = await response.json()
+      setAccessToken(data.accessToken)
+  
+      // Store refresh token and session ID in HTTP-only cookie via API route
+      await fetch("/api/v1/auth/set-tokens", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          refreshToken: data.refreshToken,
+          sessionId: data.sessionId,
+        }),
+      })
+  
+      // Get user info
+      const userResponse = await fetch("/api/v1/auth/me", {
+        headers: {
+          Authorization: `Bearer ${data.accessToken}`,
+        },
+      })
+      if (userResponse.ok) {
+        const userData = await userResponse.json()
+        setUser(userData)
+      }else{
+        const json = await userResponse.json()
+        throw new Error(json);
+      }
+    }catch(error: any){
+      console.log("error catched", error.message);
+      throw new Error(error.message);
     }
   }
 

@@ -45,7 +45,7 @@ export async function register(input: { email: string; password: string; name?: 
           },
           updatedAt: new Date()
         }});
-    await sendEmail("Welcome to Gentlemale App! Your One Time Password is " + otp + ". This OTP is valid for 5 minutes.", findUser.email, "Welcome to Gentlemale App, Here is your One Time Password");
+    await sendEmail("Welcome to Gentlemale App! Your One Time Password is : " + otp + ". This OTP is valid for 5 minutes.", findUser.email, "Welcome to Gentlemale App, Here is your One Time Password");
     return { user: { id: findUser.id, email: findUser.email }}
   }
   const user = await db.user.create({
@@ -70,9 +70,9 @@ export async function register(input: { email: string; password: string; name?: 
 
 export async function verify(input: { email: string; otp: string }) {
   const user = await db.user.findUnique({ where: { email: input.email.toLowerCase() } });
-  if (!user) throw new Error("USER_NOT_FOUND");
+  if (!user) throw new Error("User Not Found");
   if(user.OTP_expiresAt && new Date() > user.OTP_expiresAt) throw new Error("OTP IS EXPIRED");
-  if (user.OTP !== input.otp) throw new Error("INVALID_OTP");
+  if (user.OTP !== input.otp) throw new Error("Invalid OTP");
   
   await db.user.update({
     where: { id: user.id },
@@ -90,10 +90,10 @@ export async function login(
     where: { email: input.email.toLowerCase() },
     include: { credentials: true }
   });
-  if (!user || !user.credentials) throw new Error("BAD_CREDENTIALS");
-  if (!user.emailVerified) throw new Error("EMAIL_NOT_VERIFIED");
+  if (!user || !user.credentials) throw new Error("Bad Credentials");
+  if (!user.emailVerified) throw new Error("Email Not verified");
   const ok = await verifyPassword(user.credentials.passwordHash, input.password);
-  if (!ok) throw new Error("BAD_CREDENTIALS");
+  if (!ok) throw new Error("Bad Credentials");
   const { token: refreshRaw, hash: refreshHash, expiresAt: expiresAt } = await newRefreshToken(env.REFRESH_EXPIRES_IN);
   const alreadySessions = await db.session.findMany({
     where: { userId: user.id },
