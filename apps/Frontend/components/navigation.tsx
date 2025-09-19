@@ -84,7 +84,9 @@ export function Navigation() {
                   </Button>
                 </Link>
                 <Link href="/register">
-                  <Button size="sm">Register</Button>
+                  <Button size="sm">
+                    Register
+                  </Button>
                 </Link>
               </>
             )}

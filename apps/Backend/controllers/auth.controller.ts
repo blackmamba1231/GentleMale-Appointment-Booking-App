@@ -12,28 +12,28 @@ export async function verify(req: Request, res: Response, next: NextFunction) {
   try {
     const result = await service.verify(req.body);
     res.status(200).json(result);
-  } catch (e: any) { res.status(500).json({ error: "OTP verification failed" , details: e.message }); }
+  } catch (e: any) { res.status(500).json({ error: "OTP verification failed" , "message": e.message }); }
 }
 
 export async function login(req: Request, res: Response, next: NextFunction) {
   try {
     const result = await service.login(req.body, req);
     res.json(result);
-  } catch (e: any) { res.status(500).json({ error: "Login failed" , details: e.message }); }
+  } catch (e: any) { res.status(500).json({ error: "Login failed" , "message": e.message }); }
 }
 
 export async function refresh(req: Request, res: Response, next: NextFunction) {
   try {
     const result = await service.refresh(req.body);
     res.json(result);
-  } catch (e: any) { res.status(500).json({ error: "Token refresh failed" , details: e.message }); }
+  } catch (e: any) { res.status(500).json({ error: "Token refresh failed" , "message": e.message }); }
 }
 
 export async function logout(req: Request, res: Response, next: NextFunction) {
   try {
     await service.logout(req.body.sessionId);
     res.status(204).end();
-  } catch (e: any) { res.status(500).json({ error: "Logout failed" , details: e.message }); }
+  } catch (e: any) { res.status(500).json({ error: "Logout failed" , "message": e.message }); }
 }
 
 export async function me(req: Request, res: Response) {
@@ -52,6 +52,6 @@ export async function googleOAuthCallback(req: Request, res: Response,next: Next
     const tokens = await service.googleOAuthService.handleGoogleCallback(code);
     res.json(tokens);
   } catch (e: any) {
-    res.status(500).json({ error: "Google OAuth callback failed" , details: e.message });
+    res.status(500).json({ error: "Google OAuth callback failed" , "message": e.message });
   }
 }

@@ -1,6 +1,7 @@
 "use client"
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import axios from "axios"
+import { error } from "console"
 interface User {
   id: string
   email: string
@@ -52,17 +53,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const register = async (name: string, email: string, phone: string, password: string) => {
-    const response = await axios.post("/api/v1/auth/register", {
-      name, email, phone, password
-    })
-    if (response.status !== 201) {
-      const error = await response.data
-      console.log(error)
-      throw new Error(error.message)
+    try {
+      const response = await fetch("/api/v1/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name ,phone, email, password }),
+      });
+      console.log(response);
+      const json = await response.json();
+      if(!response.ok){
+        console.log("throw trigerred");
+        console.log("error is ",json);
+        throw new Error(json);
+      }
+      console.log("Success:", json);
+      return json;
+  
+    } catch (error: any) {
+      console.log("raw error", error);
+      console.log("error catched", error.message);
+      throw new Error(error.message);
     }
-
-    return response.data;
-  }
+  };
+  
 
   const verifyOtp = async (email: string, otp: string) => {
     const response = await fetch("/api/v1/auth/verify", {
