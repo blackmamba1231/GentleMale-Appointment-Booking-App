@@ -48,6 +48,7 @@ export default function RegisterPage() {
       })
       router.push(`/verify-otp?email=${encodeURIComponent(formData.email)}`)
     } catch (error) {
+      console.log("error occured", error)
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Registration failed",

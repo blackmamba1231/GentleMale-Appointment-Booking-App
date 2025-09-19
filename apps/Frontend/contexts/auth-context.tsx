@@ -1,7 +1,6 @@
 "use client"
-
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-
+import axios from "axios"
 interface User {
   id: string
   email: string
@@ -53,20 +52,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const register = async (name: string, email: string, phone: string, password: string) => {
-    const response = await fetch("/api/v1/auth/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name, email, phone, password }),
+    const response = await axios.post("/api/v1/auth/register", {
+      name, email, phone, password
     })
-
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.message || "Registration failed")
+    if (response.status !== 201) {
+      const error = await response.data
+      console.log(error)
+      throw new Error(error.message)
     }
 
-    return response.json()
+    return response.data;
   }
 
   const verifyOtp = async (email: string, otp: string) => {

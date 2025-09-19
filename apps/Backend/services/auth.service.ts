@@ -6,7 +6,6 @@ import axios from "axios";
 
 
 export async function register(input: { email: string; password: string; name?: string; phone?: string }) {
-  try{
   const exists = await db.user.findUnique({ where: { email: input.email.toLowerCase() } });
   const verified = await db.user.findFirst({
   where: {
@@ -16,7 +15,7 @@ export async function register(input: { email: string; password: string; name?: 
   });
 
   if (verified){
-    throw new Error("USER_EXISTS");
+    throw new Error("User already exists");
   }
   
   const passwordHash = await hashPassword(input.password);
@@ -67,9 +66,6 @@ export async function register(input: { email: string; password: string; name?: 
   });
   await sendEmail("Welcome to Gentlemale App! Your One Time Password is" + otp + ". This OTP is valid for 5 minutes.", user.email, "Welcome to Gentlemale App, Here is your One Time Password");
   return { user: { id: user.id, email: user.email } };
-  }catch(err){
-    throw err;
-  }
 }
 
 export async function verify(input: { email: string; otp: string }) {
