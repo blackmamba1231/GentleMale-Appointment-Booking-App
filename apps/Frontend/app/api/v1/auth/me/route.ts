@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 
-export const dynamic = "force-dynamic"; // prevent prerender
+export const dynamic = "force-dynamic"; 
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
 
   } catch (error: any) {
     console.error("catch triggered");
-
+    console.log("error", error);
       return NextResponse.json(
         error.response.data?.message ,
         { status: error.response.status || 500 }

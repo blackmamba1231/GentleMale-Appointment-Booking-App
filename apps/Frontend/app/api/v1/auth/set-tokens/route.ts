@@ -12,14 +12,14 @@ export async function POST(request: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60, // 7 days
+      maxAge: 15 * 24 * 60 * 60, // 15 days
     })
 
     cookieStore.set("sessionId", sessionId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60, // 7 days
+      maxAge: 15 * 24 * 60 * 60, // 15 days
     })
 
     return NextResponse.json({ success: true })

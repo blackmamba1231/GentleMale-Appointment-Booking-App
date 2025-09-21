@@ -18,7 +18,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute redirectTo="/login" requiredRole="CUSTOMER">
       <div className="min-h-screen bg-background">
         <Navigation />
 

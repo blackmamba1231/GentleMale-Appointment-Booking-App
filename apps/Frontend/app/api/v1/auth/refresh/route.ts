@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Call backend refresh endpoint
-    const response = await fetch(`${process.env.API_BASE_URL}/api/v1/auth/refresh`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/refresh`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

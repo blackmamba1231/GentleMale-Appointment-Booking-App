@@ -4,6 +4,11 @@ import { env } from "../utils/env";
 import { sendEmail, generateOTP } from "../utils/utils";
 import axios from "axios";
 
+export async function me(req: { user?: { id: string, role: 'CUSTOMER' | 'STYLIST' | 'ADMIN', sessionId: string }}){
+  const user = await db.user.findUnique({ where: { id: req.user?.id } });
+  if(!user) throw new Error("User not found");
+  return { user: { id: user.id, email: user.email, role: req.user?.role as 'CUSTOMER' | 'STYLIST' | 'ADMIN', phone: user.phoneE164, name: user.name , avatarUrl: user.avatarUrl } };
+}
 
 export async function register(input: { email: string; password: string; name?: string; phone?: string }) {
   const exists = await db.user.findUnique({ where: { email: input.email.toLowerCase() } });

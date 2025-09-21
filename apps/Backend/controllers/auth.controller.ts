@@ -37,8 +37,13 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
 }
 
 export async function me(req: Request, res: Response) {
+  try{
   if (!req.user) return res.status(401).json({ error: 'Unauthenticated' });
-  res.status(201).json(req.user);
+  const result = await service.me(req);
+  res.status(201).json(result);
+  }catch(e: any){
+    res.status(500).json({ error: "Me failed" , "message": e.message });
+  }
 }
 
 export async function googleOAuth(req: Request, res: Response) {
