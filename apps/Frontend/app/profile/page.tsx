@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,13 +10,16 @@ import { User, Mail, Phone, Shield, LogOut } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 export default function ProfilePage() {
-  const { user, logout } = useAuth()
+  const { user, logout, refreshToken} = useAuth()
   const router = useRouter()
-
+  useEffect(() => {
+    refreshToken();
+  }, [])
   const handleLogout = async () => {
     await logout()
     router.push("/")
   }
+ 
 
   return (
     <ProtectedRoute redirectTo="/login" requiredRole="CUSTOMER">

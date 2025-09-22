@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
@@ -30,10 +30,12 @@ export default function BookingPage() {
   const [selectedDate, setSelectedDate] = useState("")
   const [selectedTime, setSelectedTime] = useState("")
   const [loading, setLoading] = useState(false)
-  const { user, accessToken } = useAuth()
+  const { accessToken, refreshToken } = useAuth()
   const router = useRouter()
   const { toast } = useToast()
-
+  useEffect(() => {
+    refreshToken();
+  }, [])
   // Generate available time slots
   const timeSlots = [
     "09:00",

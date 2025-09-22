@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useAuth } from "@/contexts/auth-context"
@@ -15,6 +15,10 @@ import { Scissors, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 export default function RegisterPage() {
+  const {refreshToken} = useAuth();
+  useEffect(() => {
+    refreshToken();
+  }, [])
   const [formData, setFormData] = useState({
     name: "",
     email: "",

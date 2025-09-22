@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useAuth } from "@/contexts/auth-context"
@@ -20,9 +20,13 @@ export default function LoginPage() {
     password: "",
   })
   const [loading, setLoading] = useState(false)
-  const { login } = useAuth()
+  const { login, user, refreshTokenLogin } = useAuth()
   const router = useRouter()
   const { toast } = useToast()
+
+  useEffect(() => {
+    refreshTokenLogin();
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

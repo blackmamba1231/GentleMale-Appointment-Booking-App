@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     if (sessionId) {
       // Call backend logout endpoint
       try {
-        await fetch(`${process.env.API_BASE_URL}/api/v1/auth/logout`, {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/logout`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

@@ -1,8 +1,12 @@
+"use client"
+
 import Link from "next/link"
+import { useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Navigation } from "@/components/navigation"
 import { Scissors, Clock, Star, Users, Calendar, Sparkles } from "lucide-react"
+import { useAuth } from "@/contexts/auth-context"
 
 export default function HomePage() {
   const services = [
@@ -25,7 +29,11 @@ export default function HomePage() {
       price: "From $65",
     },
   ]
-
+  const { user, refreshToken } = useAuth();
+  useEffect(() => {
+    refreshToken();
+  }, [])
+  
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -48,11 +56,18 @@ export default function HomePage() {
                 Book Now
               </Button>
             </Link>
-            <Link href="/login">
+           {user?  
+            (<Link href="/profile">
+              <Button variant="outline" size="lg" className="text-lg px-8 py-3 bg-transparent">
+                Profile
+              </Button>
+            </Link>):
+            (<Link href="/login">
               <Button variant="outline" size="lg" className="text-lg px-8 py-3 bg-transparent">
                 Sign In
               </Button>
-            </Link>
+            </Link>)
+          }
           </div>
         </div>
       </section>

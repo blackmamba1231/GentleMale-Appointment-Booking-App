@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useEffect } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Scissors, User, Calendar, Settings, LogOut } from "lucide-react"
@@ -13,8 +14,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export function Navigation() {
-  const { user, logout } = useAuth()
-
+  const { user, logout, refreshToken } = useAuth()
+  useEffect(() => {
+    refreshToken();
+  }, [])
   const handleLogout = async () => {
     await logout()
     window.location.href = "/"

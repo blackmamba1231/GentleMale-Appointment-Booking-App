@@ -45,10 +45,12 @@ export default function MyAppointmentsPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
   const [cancellingId, setCancellingId] = useState<string | null>(null)
-  const { user, accessToken } = useAuth()
+  const { user, accessToken, refreshToken } = useAuth()
   const router = useRouter()
   const { toast } = useToast()
-
+  useEffect(() => {
+    refreshToken();
+}, [])
   useEffect(() => {
     fetchAppointments()
   }, [])

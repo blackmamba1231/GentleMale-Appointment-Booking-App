@@ -1,8 +1,6 @@
 "use client"
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { createContext, useContext, useState, useEffect, type ReactNode, use } from "react"
 import axios from "axios"
-import { error } from "console"
-import { cookies } from "next/headers"
 import { useRouter } from "next/navigation"
 import jwt, { type JwtPayload } from "jsonwebtoken"
 
@@ -23,14 +21,10 @@ interface AuthContextType {
   verifyOtp: (email: string, otp: string) => Promise<void>
   logout: () => Promise<void>
   refreshToken: () => Promise<void>
+  refreshTokenLogin: () => Promise<void>
   loading: boolean
 }
 
-interface AccessTokenPayload extends JwtPayload {
-  sub: string;
-  role: string;
-  jti: string;
-}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -38,36 +32,8 @@ export async function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [accessToken, setAccessToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
-  const cookieStore = await cookies()
   const router = useRouter()
-  // Check for existing session on mount
-  useEffect(() => {
-    checkAuthStatus()
-  }, [])
 
-  
-  const checkAuthStatus = async () => {
-    try {
-      const validToken = verifyAccessToken(accessToken!)
-      if (!validToken) {
-        refreshToken();
-      }
-    } catch (error) {
-      console.error("Auth check failed:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
-  const verifyAccessToken= async(token: string) =>{
-    try {
-      const payload = jwt.verify(token, process.env.NEXT_PUBLIC_JWT_SECRET!) as AccessTokenPayload;
-      return payload;
-    } catch (err) {
-      console.error('Access token verification failed');
-      throw new Error("Invalid token");
-      return null;
-    }
-  }
   
 
   const register = async (name: string, email: string, phone: string, password: string) => {
@@ -137,7 +103,6 @@ export async function AuthProvider({ children }: { children: ReactNode }) {
   
       const data = await response.json()
       setAccessToken(data.accessToken)
-  
       // Store refresh token and session ID in HTTP-only cookie via API route
       await fetch("/api/v1/auth/set-tokens", {
         method: "POST",
@@ -171,28 +136,84 @@ export async function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshToken = async () => {
     try {
-      const response = await axios.post(process.env.NEXT_PUBLIC_API_URL + "/api/v1/auth/refresh", {
-        refreshToken: cookieStore.get("refreshToken")?.value,
-        sessionId: cookieStore.get("sessionId")?.value
+      const res = await fetch("/api/v1/auth/get-tokens", {
+        method: "GET",
       })
+      if (!res.ok) {
+        throw new Error("Failed to get tokens")
+      }
+
+      const data = await res.json()
+      const response = await axios.post(process.env.NEXT_PUBLIC_API_URL + "/api/v1/auth/refresh", {
+        refreshToken: data.refreshToken.value,
+        sessionId: data.sessionId.value
+      }, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
       if (response.status !== 201) {
-        cookieStore.delete("refreshToken")
-        cookieStore.delete("sessionId")
         router.push("/login")
       }
       setAccessToken(response.data.accessToken)
+      const userResponse = await fetch("/api/v1/auth/me", {
+        headers: { Authorization: `Bearer ${response.data.accessToken}` },
+      })
+      if (userResponse.ok) {
+        const userData = await userResponse.json()
+        setUser(userData.user)
+      }
     } catch (error) {
       console.error("Auth check failed:", error)
     } finally {
       setLoading(false)
     }
   }
+  const refreshTokenLogin = async () => {
+    try {
+      const res = await fetch("/api/v1/auth/get-tokens", {
+        method: "GET",
+      })
+      if (!res.ok) {
+        throw new Error("Failed to get tokens")
+      }
 
+      const data = await res.json()
+      const response = await axios.post(process.env.NEXT_PUBLIC_API_URL + "/api/v1/auth/refresh", {
+        refreshToken: data.refreshToken.value,
+        sessionId: data.sessionId.value
+      }, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      if (response.status !== 201) {
+        router.push("/login")
+      }
+      setAccessToken(response.data.accessToken)
+      const userResponse = await fetch("/api/v1/auth/me", {
+        headers: { Authorization: `Bearer ${response.data.accessToken}` },
+      })
+      if (userResponse.ok) {
+        const userData = await userResponse.json()
+        setUser(userData.user)
+      }
+      router.push('/profile');
+    } catch (error) {
+      console.error("Auth check failed:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
   const logout = async () => {
     try {
-      await fetch("/api/auth/logout", {
+      await fetch("/api/v1/auth/logout", {
         method: "POST",
       })
+      setUser(null);
+      setAccessToken(null)
     } catch (error) {
       console.error("Logout error:", error)
     } finally {
@@ -205,13 +226,14 @@ export async function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        accessToken,
+        accessToken: accessToken ?? null,
         login,
         register,
         verifyOtp,
         logout,
         refreshToken,
         loading,
+        refreshTokenLogin
       }}
     >
       {children}

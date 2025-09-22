@@ -18,11 +18,13 @@ export default function VerifyOtpPage() {
   const [otp, setOtp] = useState("")
   const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState("")
-  const { verifyOtp } = useAuth()
+  const { verifyOtp, refreshToken } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
-
+  useEffect(() => {
+    refreshToken();
+  }, [])
   useEffect(() => {
     const emailParam = searchParams.get("email")
     if (emailParam) {

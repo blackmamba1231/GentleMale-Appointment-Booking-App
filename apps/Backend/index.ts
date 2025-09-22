@@ -8,6 +8,7 @@ import { corsOptions } from "./config/security";
 
 const app = express();
 
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use("/api", routes);
 app.use(helmet());

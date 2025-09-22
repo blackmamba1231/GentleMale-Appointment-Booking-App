@@ -123,10 +123,10 @@ export async function login(
 
 export async function refresh(input: { refreshToken: string; sessionId: string }) {
   const session = await db.session.findUnique({ where: { id: input.sessionId }, include: { user: true } });
-  if (!session || !session.refreshTokenHash) throw new Error("INVALID_SESSION");
+  if (!session || !session.refreshTokenHash) throw new Error("INVALID SESSION");
 
   const valid = await import("../utils/crypto").then(m => m.verifyRefresh(session.refreshTokenHash!, input.refreshToken));
-  if (!valid || new Date() > session.expiresAt) throw new Error("REFRESH_EXPIRED");
+  if (!valid || new Date() > session.expiresAt) throw new Error("REFRESH EXPIRED");
 
   const accessToken = await signAccessJwt({ sub: session.userId ,role: "CUSTOMER", jti: input.sessionId }, env.JWT_EXPIRES_IN);
   return { accessToken };
