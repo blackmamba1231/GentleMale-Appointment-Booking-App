@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import {  useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -9,19 +9,21 @@ import { Calendar, Clock, CheckCircle, Scissors, Crown, Sparkles, MapPin } from 
 import{ Navigation} from "../../components/navigation"
 import Image from "next/image"
 import { useAuth } from "@/contexts/auth-context"
+import { ProtectedRoute } from "@/components/protected-route"
 
 export default function BookingPage() {
   const [selectedDate, setSelectedDate] = useState("2024-01-15")
   const [selectedTime, setSelectedTime] = useState("")
   const [selectedService, setSelectedService] = useState("")
-  const [step, setStep] = useState(1) // 1: Service, 2: DateTime, 3: Contact
+  const [step, setStep] = useState(1) 
   const [contactForm, setContactForm] = useState({
     firstName: "",
     lastName: "",
     phone: "",
-    email: "",
+    email: "", 
     notes: "",
   })
+
   const { user, refreshToken } = useAuth();
   useEffect(() => {
     refreshToken();
@@ -100,6 +102,7 @@ export default function BookingPage() {
   }
 
   return (
+    <ProtectedRoute redirectTo="/login" requiredRole="CUSTOMER">
     <div className="min-h-screen bg-gray-50">
       <Navigation />
 
@@ -475,5 +478,6 @@ export default function BookingPage() {
         </div>
       </div>
     </div>
+    </ProtectedRoute>
   )
 }

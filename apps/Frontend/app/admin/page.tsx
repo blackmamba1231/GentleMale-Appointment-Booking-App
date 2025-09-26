@@ -17,7 +17,7 @@ import {
   PieChart,
   Activity,
 } from "lucide-react"
-import {Navigation} from "../../components/navigation"
+import { Navigation } from "../../components/navigation"
 import { ProtectedRoute } from "@/components/protected-route"
 
 export default function AdminDashboard() {

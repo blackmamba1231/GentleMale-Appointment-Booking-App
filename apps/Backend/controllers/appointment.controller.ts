@@ -40,3 +40,17 @@ export async function cancelAppointment(req: Request, res: Response, next: NextF
       res.status(200).json(result);
     } catch (e) { next(e); }
 }
+
+export async function getServices(req: Request, res: Response, next: NextFunction) {
+  try{
+    const result = await service.getServices(req);
+    res.status(200).json(result);
+  }catch (e) { next(e); }
+}
+
+export async function createService(req: Request, res: Response, next: NextFunction) {
+  try{
+    const result = await service.createService(req);
+    res.status(200).json(result);
+  }catch (e) { next(e); }
+}

@@ -68,3 +68,24 @@ export async function confirmAppointment(params:{ id: string },req: { user?: { i
         throw e;
     }
 }
+export async function getServices(req: { user?: { id: string, role: 'CUSTOMER' | 'STYLIST' | 'ADMIN', sessionId: string }}){
+    try{
+        if(!req.user) throw new Error("UNAUTHENTICATED");
+        if(req.user.role !== "ADMIN" && req.user.role !== "STYLIST") throw new Error("FORBIDDEN");
+        const services = await db.service.findMany();
+        return services;
+    } catch (e){
+        throw e;
+    }
+}
+export async function createService(req: { user?: { id: string, role: 'CUSTOMER' | 'STYLIST' | 'ADMIN', sessionId: string }, body: { name: string, price: number, duration: number, description: string, icon: string, image: string, serviceId: string }}){
+    try{
+        if(!req.user) throw new Error("UNAUTHENTICATED");
+        if(req.user.role !== "ADMIN" && req.user.role !== "STYLIST") throw new Error("FORBIDDEN");
+        const { name, price, duration, description, icon, image, serviceId } = req.body;
+        const services = await db.service.create({ data: { name, price, duration, description, icon, image, userId: req.user.id, serviceId } });
+        return services;
+    } catch (e){
+        throw e;
+    }
+}

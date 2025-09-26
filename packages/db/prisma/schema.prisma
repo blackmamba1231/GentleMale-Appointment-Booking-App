@@ -45,6 +45,7 @@ model User {
   lastLoginAt     DateTime?
 
   // Relations
+  services Service[]
   credentials     UserCredential?
   roles           UserRole[]
   sessions        Session[]
@@ -53,7 +54,21 @@ model User {
   appointments    appointment[]
   @@index([phoneE164])
 }
-
+model Service{
+  id String @id @default(cuid())
+  name String @db.VarChar(100)
+  price Int
+  duration Int
+  description String @db.Text
+  icon String @db.VarChar(100)
+  image String? @db.Text
+  serviceId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([serviceId])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+}
 model appointment {
   id String @id @default(cuid())
   customerId String 
