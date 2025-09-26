@@ -68,7 +68,7 @@ export default function LoginPage() {
               <Scissors className="h-6 w-6 text-primary" />
             </div>
             <CardTitle className="text-2xl">Welcome Back</CardTitle>
-            <CardDescription>Sign in to your SalonBook account</CardDescription>
+            <CardDescription>Sign in to your GentleMale account</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -98,7 +98,7 @@ export default function LoginPage() {
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full bg-amber-600 hover:bg-amber-700 text-white rounded-full px-6" disabled={loading}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Sign In
               </Button>
@@ -107,7 +107,7 @@ export default function LoginPage() {
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
                 Don't have an account?{" "}
-                <Link href="/register" className="text-primary hover:underline">
+                <Link href="/register" className="text-primary  hover:underline hover:text-amber-600">
                   Create one
                 </Link>
               </p>

@@ -1,303 +1,319 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Navigation } from "@/components/navigation"
+import { Button } from "@/components/ui/button"
+import {
+  Calendar,
+  DollarSign,
+  Users,
+  Package,
+  TrendingUp,
+  AlertTriangle,
+  Clock,
+  CheckCircle,
+  BarChart3,
+  PieChart,
+  Activity,
+} from "lucide-react"
+import {Navigation} from "../../components/navigation"
 import { ProtectedRoute } from "@/components/protected-route"
-import { Settings, Check, Loader2, Calendar, User, Mail, Phone } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import { apiRequest } from "@/lib/api"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
-interface AdminAppointment {
-  id: string
-  service: string
-  date: string
-  status: "PENDING" | "CONFIRMED" | "CANCELLED"
-  customer: {
-    id: string
-    name?: string
-    email: string
-    phone?: string
-  }
-  createdAt: string
-}
+export default function AdminDashboard() {
+  const [selectedPeriod, setSelectedPeriod] = useState("today")
 
-const serviceLabels: Record<string, string> = {
-  haircut: "Haircut & Styling",
-  coloring: "Hair Coloring",
-  treatment: "Hair Treatment",
-  highlights: "Highlights",
-  blowout: "Blowout",
-  updo: "Updo Styling",
-}
-
-export default function AdminDashboardPage() {
-  const [appointments, setAppointments] = useState<AdminAppointment[]>([])
-  const [loading, setLoading] = useState(true)
-  const [confirmingId, setConfirmingId] = useState<string | null>(null)
-  const { user, accessToken } = useAuth()
-  const router = useRouter()
-  const { toast } = useToast()
-
-  useEffect(() => {
-    fetchAllAppointments()
-  }, [])
-
-  const fetchAllAppointments = async () => {
-    if (!accessToken) return
-
-    try {
-      const data = await apiRequest(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/v1/appointment/all-appointments`,
-        {
-          accessToken,
-        },
-      )
-      setAppointments(data)
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load appointments",
-        variant: "destructive",
-      })
-    } finally {
-      setLoading(false)
-    }
+  const stats = {
+    totalBookings: 47,
+    todayQueue: 12,
+    revenue: 3420,
+    lowStock: 3,
   }
 
-  const handleConfirmAppointment = async (appointmentId: string) => {
-    if (!accessToken) return
+  const recentBookings = [
+    { id: 1, client: "Arnav Sharma", service: "Signature Cut", time: "09:30", status: "completed" },
+    { id: 2, client: "Rajat Verma", service: "Beard Treatment", time: "10:00", status: "in-progress" },
+    { id: 3, client: "Ishaan Malhotra", service: "Executive Package", time: "10:30", status: "waiting" },
+    { id: 4, client: "Karan Mehta", service: "Signature Cut", time: "11:00", status: "confirmed" },
+    { id: 5, client: "Siddharth Joshi", service: "Beard Treatment", time: "11:30", status: "confirmed" },
+]
 
-    setConfirmingId(appointmentId)
-    try {
-      await apiRequest(`${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/v1/appointment/confirm/${appointmentId}`, {
-        method: "POST",
-        accessToken,
-      })
 
-      setAppointments((prev) =>
-        prev.map((apt) => (apt.id === appointmentId ? { ...apt, status: "CONFIRMED" as const } : apt)),
-      )
+  const inventoryAlerts = [
+    { product: "Premium Pomade", stock: 3, status: "critical" },
+    { product: "Beard Oil Elixir", stock: 8, status: "low" },
+    { product: "Clay Texture Paste", stock: 5, status: "low" },
+  ]
 
-      toast({
-        title: "Success",
-        description: "Appointment confirmed successfully",
-      })
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to confirm appointment",
-        variant: "destructive",
-      })
-    } finally {
-      setConfirmingId(null)
-    }
-  }
+  const queueData = [
+    { position: 1, client: "Kunal Singh", service: "Beard Treatment", estimatedTime: "10 min" },
+    { position: 2, client: "Pratham Negi", service: "Classic Cut", estimatedTime: "25 min" },
+    { position: 3, client: "Sujeet Kumar", service: "Signature Cut", estimatedTime: "70 min" },
+  ]
 
-  const getStatusBadge = (status: string) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case "CONFIRMED":
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Confirmed</Badge>
-      case "PENDING":
-        return <Badge variant="secondary">Pending</Badge>
-      case "CANCELLED":
-        return <Badge variant="destructive">Cancelled</Badge>
+      case "completed":
+        return "bg-green-100 text-green-800"
+      case "in-progress":
+        return "bg-blue-100 text-blue-800"
+      case "waiting":
+        return "bg-amber-100 text-amber-800"
+      case "confirmed":
+        return "bg-gray-100 text-gray-800"
       default:
-        return <Badge variant="outline">{status}</Badge>
+        return "bg-gray-100 text-gray-800"
     }
   }
 
-  const formatDateTime = (dateString: string) => {
-    const date = new Date(dateString)
-    return {
-      date: date.toLocaleDateString(),
-      time: date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "completed":
+        return <CheckCircle className="h-4 w-4" />
+      case "in-progress":
+        return <Clock className="h-4 w-4" />
+      case "waiting":
+        return <Users className="h-4 w-4" />
+      case "confirmed":
+        return <Calendar className="h-4 w-4" />
+      default:
+        return <Calendar className="h-4 w-4" />
     }
   }
-
-  const getStats = () => {
-    const total = appointments.length
-    const pending = appointments.filter((apt) => apt.status === "PENDING").length
-    const confirmed = appointments.filter((apt) => apt.status === "CONFIRMED").length
-    const cancelled = appointments.filter((apt) => apt.status === "CANCELLED").length
-
-    return { total, pending, confirmed, cancelled }
-  }
-
-  if (loading) {
-    return (
-      <ProtectedRoute requiredRole="ADMIN">
-        <div className="min-h-screen bg-background">
-          <Navigation />
-          <div className="container mx-auto px-4 py-16 flex items-center justify-center">
-            <div className="text-center">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-              <p>Loading dashboard...</p>
-            </div>
-          </div>
-        </div>
-      </ProtectedRoute>
-    )
-  }
-
-  const stats = getStats()
 
   return (
-    <ProtectedRoute requiredRole="ADMIN">
-      <div className="min-h-screen bg-background">
-        <Navigation />
+    <ProtectedRoute redirectTo="/login" requiredRole="ADMIN">
+    <div className="min-h-screen bg-gray-50">
+      <Navigation />
 
-        <div className="container mx-auto px-4 py-16">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center space-x-2 mb-8">
-              <Settings className="h-8 w-8 text-primary" />
-              <div>
-                <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
-                <p className="text-muted-foreground">Manage salon appointments and customers</p>
+      <div className="container mx-auto px-4 py-12">
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-12 gap-4">
+          <div>
+            <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Admin Dashboard</h1>
+            <p className="text-xl text-gray-600">Monitor your salon's performance and operations</p>
+          </div>
+
+          <div className="flex gap-2">
+            {["today", "week", "month"].map((period) => (
+              <Button
+                key={period}
+                variant={selectedPeriod === period ? "default" : "outline"}
+                onClick={() => setSelectedPeriod(period)}
+                className={`capitalize rounded-full ₹{
+                  selectedPeriod === period
+                    ? "bg-amber-600 hover:bg-amber-700 text-white"
+                    : "hover:bg-amber-50 border-gray-200"
+                }`}
+              >
+                {period}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-blue-100 text-sm font-medium">Total Bookings</p>
+                  <p className="text-3xl font-bold">{stats.totalBookings}</p>
+                  <p className="text-blue-100 text-sm flex items-center mt-2">
+                    <TrendingUp className="h-4 w-4 mr-1" />
+                    +12% from yesterday
+                  </p>
+                </div>
+                <Calendar className="h-12 w-12 text-blue-200" />
               </div>
-            </div>
+            </CardContent>
+          </Card>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Total Appointments</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.total}</div>
-                </CardContent>
-              </Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-amber-500 to-amber-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-amber-100 text-sm font-medium">Today's Queue</p>
+                  <p className="text-3xl font-bold">{stats.todayQueue}</p>
+                  <p className="text-amber-100 text-sm flex items-center mt-2">
+                    <Clock className="h-4 w-4 mr-1" />3 in progress
+                  </p>
+                </div>
+                <Users className="h-12 w-12 text-amber-200" />
+              </div>
+            </CardContent>
+          </Card>
 
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Pending</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
-                </CardContent>
-              </Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-green-500 to-green-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-green-100 text-sm font-medium">Revenue</p>
+                  <p className="text-3xl font-bold">₹{stats.revenue.toLocaleString()}</p>
+                  <p className="text-green-100 text-sm flex items-center mt-2">
+                    <TrendingUp className="h-4 w-4 mr-1" />
+                    +8% from last week
+                  </p>
+                </div>
+                <DollarSign className="h-12 w-12 text-green-200" />
+              </div>
+            </CardContent>
+          </Card>
 
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Confirmed</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-green-600">{stats.confirmed}</div>
-                </CardContent>
-              </Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-red-500 to-red-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-red-100 text-sm font-medium">Low Stock Items</p>
+                  <p className="text-3xl font-bold">{stats.lowStock}</p>
+                  <p className="text-red-100 text-sm flex items-center mt-2">
+                    <AlertTriangle className="h-4 w-4 mr-1" />
+                    Needs attention
+                  </p>
+                </div>
+                <Package className="h-12 w-12 text-red-200" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Cancelled</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-red-600">{stats.cancelled}</div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Appointments Table */}
-            <Card>
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Recent Bookings */}
+          <div className="lg:col-span-2">
+            <Card className="border-0 shadow-lg bg-white">
               <CardHeader>
-                <CardTitle>All Appointments</CardTitle>
-                <CardDescription>Manage customer appointments and confirmations</CardDescription>
+                <CardTitle className="flex items-center">
+                  <Activity className="mr-2 h-5 w-5 text-amber-600" />
+                  Recent Bookings
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                {appointments.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-medium mb-2">No appointments yet</h3>
-                    <p className="text-muted-foreground">Appointments will appear here once customers start booking.</p>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Customer</TableHead>
-                          <TableHead>Service</TableHead>
-                          <TableHead>Date & Time</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {appointments.map((appointment) => {
-                          const { date, time } = formatDateTime(appointment.date)
-                          return (
-                            <TableRow key={appointment.id}>
-                              <TableCell>
-                                <div className="space-y-1">
-                                  <div className="flex items-center space-x-2">
-                                    <User className="h-4 w-4 text-muted-foreground" />
-                                    <span className="font-medium">
-                                      {appointment.customer.name || "No name provided"}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                                    <Mail className="h-3 w-3" />
-                                    <span>{appointment.customer.email}</span>
-                                  </div>
-                                  {appointment.customer.phone && (
-                                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                                      <Phone className="h-3 w-3" />
-                                      <span>{appointment.customer.phone}</span>
-                                    </div>
-                                  )}
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <span className="font-medium">
-                                  {serviceLabels[appointment.service] || appointment.service}
-                                </span>
-                              </TableCell>
-                              <TableCell>
-                                <div className="space-y-1">
-                                  <div className="flex items-center space-x-1">
-                                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                                    <span>{date}</span>
-                                  </div>
-                                  <div className="flex items-center space-x-1 text-sm text-muted-foreground">
-                                    <span>{time}</span>
-                                  </div>
-                                </div>
-                              </TableCell>
-                              <TableCell>{getStatusBadge(appointment.status)}</TableCell>
-                              <TableCell>
-                                {appointment.status === "PENDING" && (
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleConfirmAppointment(appointment.id)}
-                                    disabled={confirmingId === appointment.id}
-                                  >
-                                    {confirmingId === appointment.id ? (
-                                      <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                      <>
-                                        <Check className="h-4 w-4 mr-1" />
-                                        Confirm
-                                      </>
-                                    )}
-                                  </Button>
-                                )}
-                              </TableCell>
-                            </TableRow>
-                          )
-                        })}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
+                <div className="space-y-4">
+                  {recentBookings.map((booking) => (
+                    <div
+                      key={booking.id}
+                      className="flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+                          {getStatusIcon(booking.status)}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900">{booking.client}</p>
+                          <p className="text-sm text-gray-600">{booking.service}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium text-gray-900">{booking.time}</p>
+                        <Badge className={`₹{getStatusColor(booking.status)} text-xs rounded-full`}>
+                          {booking.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Current Queue & Inventory */}
+          <div className="space-y-6">
+            <Card className="border-0 shadow-lg bg-white">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Users className="mr-2 h-5 w-5 text-amber-600" />
+                  Current Queue
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {queueData.map((item) => (
+                    <div key={item.position} className="flex items-center justify-between p-3 rounded-lg bg-amber-50">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-amber-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                          {item.position}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">{item.client}</p>
+                          <p className="text-xs text-gray-600">{item.service}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-amber-700">{item.estimatedTime}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Inventory Alerts */}
+            <Card className="border-0 shadow-lg bg-white">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <AlertTriangle className="mr-2 h-5 w-5 text-red-600" />
+                  Inventory Alerts
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {inventoryAlerts.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-red-50">
+                      <div>
+                        <p className="font-medium text-gray-900">{item.product}</p>
+                        <p className="text-sm text-gray-600">{item.stock} units left</p>
+                      </div>
+                      <Badge
+                        className={`rounded-full ${
+                          item.status === "critical" ? "bg-red-100 text-red-800" : "bg-amber-100 text-amber-800"
+                        }`}
+                      >
+                        {item.status}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+                <Button className="w-full mt-4 bg-red-600 hover:bg-red-700 text-white rounded-full">
+                  Reorder Stock
+                </Button>
               </CardContent>
             </Card>
           </div>
         </div>
+
+        {/* Performance Charts Placeholder */}
+        <div className="grid md:grid-cols-2 gap-8 mt-12">
+          <Card className="border-0 shadow-lg bg-white">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <BarChart3 className="mr-2 h-5 w-5 text-amber-600" />
+                Revenue Trends
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl flex items-center justify-center">
+                <p className="text-gray-600">Chart visualization would go here</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg bg-white">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <PieChart className="mr-2 h-5 w-5 text-green-600" />
+                Service Distribution
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64 bg-gradient-to-br from-green-50 to-green-100 rounded-xl flex items-center justify-center">
+                <p className="text-gray-600">Chart visualization would go here</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
+    </div>
     </ProtectedRoute>
   )
 }

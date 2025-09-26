@@ -139,7 +139,7 @@ export default function HomePage() {
                 className="border-amber-600 text-amber-600 hover:bg-amber-50 px-8 py-4 rounded-full transition-all duration-300 bg-transparent"
                 asChild
               >
-                <Link href="/store">View Our Products</Link>
+
               </Button>
             </div>
 
@@ -544,14 +544,6 @@ export default function HomePage() {
                 </Link>
               </li>
               <li>
-                <Link href="/store" className="hover:text-amber-400 transition-colors">
-                  Products
-                </Link>
-              </li>
-              <li>
-                <Link href="/admin" className="hover:text-amber-400 transition-colors">
-                  Admin
-                </Link>
               </li>
             </ul>
           </div>

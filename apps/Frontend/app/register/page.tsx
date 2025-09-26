@@ -81,7 +81,7 @@ export default function RegisterPage() {
               <Scissors className="h-6 w-6 text-primary" />
             </div>
             <CardTitle className="text-2xl">Create Account</CardTitle>
-            <CardDescription>Join SalonBook to start booking your appointments</CardDescription>
+            <CardDescription>Join GentleMale to start booking your appointments</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -150,7 +150,7 @@ export default function RegisterPage() {
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full bg-amber-600 hover:bg-amber-700 text-white rounded-full px-6" disabled={loading}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create Account
               </Button>
