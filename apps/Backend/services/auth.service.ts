@@ -117,7 +117,13 @@ export async function login(
       expiresAt: expiresAt,
     }
   });
-  const accessToken = await signAccessJwt({ sub: user.id, role: "CUSTOMER", jti: session.id}, env.JWT_EXPIRES_IN);
+  const roleresponse = await db.userRole.findMany({
+    where:{
+      userId: user.id,
+    }
+  })
+  const role = roleresponse[0]?.role;
+  const accessToken = await signAccessJwt({ sub: user.id, role: role, jti: session.id}, env.JWT_EXPIRES_IN);
   return { accessToken, refreshToken: refreshRaw, sessionId: session.id };
 }
 
@@ -127,8 +133,13 @@ export async function refresh(input: { refreshToken: string; sessionId: string }
 
   const valid = await import("../utils/crypto").then(m => m.verifyRefresh(session.refreshTokenHash!, input.refreshToken));
   if (!valid || new Date() > session.expiresAt) throw new Error("REFRESH EXPIRED");
-
-  const accessToken = await signAccessJwt({ sub: session.userId ,role: "CUSTOMER", jti: input.sessionId }, env.JWT_EXPIRES_IN);
+  const roleresponse = await db.userRole.findMany({
+    where:{
+      userId: session.userId,
+    }
+  })
+  const role = roleresponse[0]?.role;
+  const accessToken = await signAccessJwt({ sub: session.userId ,role: role, jti: input.sessionId }, env.JWT_EXPIRES_IN);
   return { accessToken };
 }
 

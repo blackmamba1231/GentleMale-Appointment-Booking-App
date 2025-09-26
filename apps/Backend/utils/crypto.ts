@@ -17,10 +17,9 @@ interface AccessTokenPayload extends JwtPayload {
 }
 export function verifyAccessToken(token: string) {
   try {
-    console.log("token", token);
-    console.log("env.JWT_SECRET", env.JWT_SECRET);
     const payload = jwt.verify(token, env.JWT_SECRET
     ) as AccessTokenPayload;
+    console.log(payload);
     return payload;
   } catch (err) {
     console.error('Access token verification failed');

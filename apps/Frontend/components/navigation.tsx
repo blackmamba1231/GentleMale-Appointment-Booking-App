@@ -35,6 +35,7 @@ export function Navigation() {
     if (href === "/") return pathname === "/"
     return pathname.startsWith(href)
   }
+  console.log(user)
 
   return (
     <nav className="bg-white/95 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
@@ -83,7 +84,7 @@ export function Navigation() {
                 {user.role === "ADMIN" && (
                   <>
                    <div className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
+            {adminNavItems.map((item) => (
               <Link key={item.href} href={item.href}>
                 <span
                   className={`text-sm font-medium transition-colors duration-200 hover:text-amber-600 ${
@@ -109,44 +110,44 @@ export function Navigation() {
           </Button></>
                 )}
 
-            {isOpen && (
-                      <div className="md:hidden py-4 border-t border-gray-100">
-                        <div className="space-y-2">
-                          {navItems.map((item) => (
-                            <Link key={item.href} href={item.href} onClick={() => setIsOpen(false)}>
-                              <div
-                                className={`block px-4 py-2 text-sm font-medium transition-colors duration-200 hover:text-amber-600 hover:bg-amber-50 rounded-lg ${
-                                  isActive(item.href) ? "text-amber-600 bg-amber-50" : "text-gray-700"
-                                }`}
-                              >
-                                {item.label}
-                              </div>
-                            </Link>
-                          ))}
-                        </div>
+                {isOpen && (
+                          <div className="md:hidden py-4 border-t border-gray-100">
+                            <div className="space-y-2">
+                              {navItems.map((item) => (
+                                <Link key={item.href} href={item.href} onClick={() => setIsOpen(false)}>
+                                  <div
+                                    className={`block px-4 py-2 text-sm font-medium transition-colors duration-200 hover:text-amber-600 hover:bg-amber-50 rounded-lg ${
+                                      isActive(item.href) ? "text-amber-600 bg-amber-50" : "text-gray-700"
+                                    }`}
+                                  >
+                                    {item.label}
+                                  </div>
+                                </Link>
+                              ))}
+                            </div>
 
-                        <div className="mt-4 pt-4 border-t border-gray-100">
-                          <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white rounded-full" asChild>
-                            <Link href="/booking">Book Now</Link>
-                          </Button>
-                        </div>
-                      </div>
-                    )}
+                            <div className="mt-4 pt-4 border-t border-gray-100">
+                              <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white rounded-full" asChild>
+                                <Link href="/booking">Book Now</Link>
+                              </Button>
+                            </div>
+                          </div>
+                        )}
               </>
-            ) : (
-              <>
-                <Link href="/login">
-                  <Button variant="ghost" size="sm" className="text-gray-700 hover:bg-amber-700 hover:text-white rounded-xl px-6">
-                    Login
-                  </Button>
-                </Link>
-                <Link href="/register">
-                  <Button className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl px-6" size="sm">
-                    Register
-                  </Button>
-                </Link>
-              </>
-            )}
+              ) : (
+                <>
+                  <Link href="/login">
+                    <Button variant="ghost" size="sm" className="text-gray-700 hover:bg-amber-700 hover:text-white rounded-xl px-6">
+                      Login
+                    </Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl px-6" size="sm">
+                      Register
+                    </Button>
+                  </Link>
+                </>
+              )}
           </div>
         </div>
       </div>
